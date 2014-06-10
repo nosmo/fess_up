@@ -68,7 +68,7 @@ class DomainScan(object):
             subdomains = self.subdomain_list
 
         for subdomain in subdomains:
-            query_str = "%s.%s" % (subdomain, self.domain) if subdomain else hostname
+            query_str = "%s.%s" % (subdomain, self.domain) if subdomain else self.domain
             try:
                 answers = dns.resolver.query("%s" % (query_str), record_type)
             except dns.resolver.NXDOMAIN as e:
@@ -94,11 +94,17 @@ class DomainScan(object):
             return False
         return True
 
-def main(domain):
-    domain_scanner = DomainScan(domain, subdomain_list)
-    domain_scanner.runScan()
-    pprint.pprint(dict(domain_scanner.data))
+def main(domain_list):
+    for domain in domain_list:
+        print domain
+        domain_scanner = DomainScan(domain, subdomain_list)
+        domain_scanner.runScan()
+        pprint.pprint(dict(domain_scanner.data))
+        print
 
 if __name__ == "__main__":
-    hostname = "google.com"
-    main(hostname)
+    parser = argparse.ArgumentParser(description='Scan a domain for DNS records')
+    parser.add_argument('domains', metavar='dom', type=str, nargs='+',
+                        help='A list of domains to check')
+    args = parser.parse_args()
+    main(args.domains)
