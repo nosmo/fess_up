@@ -21,12 +21,22 @@ import dns.rdtypes.IN.A
 import dns.rdtypes.ANY.MX
 
 import collections
+import logging
 import argparse
-
 import pprint
 
-subdomain_list = ["www", "mail",
+import dnsnames
+
+try:
+    import redis
+except ImportError as e:
+    logging.warning("No redis module available, not using redis support")
+
+subdomain_list = ["www", "mail", "wiki", "search", "blog", "blogs", "sites", "my",
                   "www2", "dev", None]
+
+# Here we use "None" to indicate the root of a domain.
+dnsname_list = dnsnames.dnsnames + [None]
 
 dnsobject_map = {
     dns.rdtypes.ANY.CNAME.CNAME: ["target"],
@@ -97,7 +107,7 @@ class DomainScan(object):
 def main(domain_list):
     for domain in domain_list:
         print domain
-        domain_scanner = DomainScan(domain, subdomain_list)
+        domain_scanner = DomainScan(domain, dnsname_list)
         domain_scanner.runScan()
         pprint.pprint(dict(domain_scanner.data))
         print
