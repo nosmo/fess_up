@@ -1,5 +1,4 @@
 ---
-dnsdata_dir: ../lib/dnsnames/
 mysql:
   user: root
   pass: ""
