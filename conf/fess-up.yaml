@@ -1,0 +1,7 @@
+---
+dnsdata_dir: ../lib/dnsnames/
+mysql:
+  user: root
+  pass: ""
+  host: localhost
+  db: deflect
