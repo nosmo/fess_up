@@ -3,4 +3,4 @@ mysql:
   user: root
   pass: ""
   host: localhost
-  db: deflect
+  database: deflect

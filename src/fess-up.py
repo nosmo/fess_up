@@ -23,6 +23,7 @@ import dns.rdtypes.ANY.MX
 import collections
 import logging
 import argparse
+import yaml
 import pprint
 
 import dnsnames
@@ -48,17 +49,10 @@ dnsobject_map = {
 
 class DomainScan(object):
 
-    def __init__(self, domain, subdomain_list, mysql):
+    def __init__(self, domain, subdomain_list):
         self.domain = domain
         self.subdomain_list = subdomain_list
         self.data = collections.defaultdict(dict)
-        if mysql:
-            self.mysql_connection = MySQLdb.connection(mysql["host"],
-                                                       mysql["user"],
-                                                       mysql["pass"],
-                                                       mysql["database"])
-        else:
-            self.mysql_connection = None
 
     def runScan(self):
 
@@ -77,8 +71,9 @@ class DomainScan(object):
         for subdomain in self.data.keys():
             for subdomain, records in self._scan("MX").iteritems():
                 for i in xrange(0, len(records), 2):
-                    #l[i:i+n]
-                    mxlist.append((str(records[i]), records[i+1]))
+                    mxtuple = (str(records[i]), records[i+1])
+                    if mxtuple not in mxlist:
+                        mxlist.append(mxtuple)
         self.data[subdomain]["MX"] = mxlist
 
     def _scan(self, record_type, subdomains=None):
@@ -115,10 +110,24 @@ class DomainScan(object):
             return False
         return True
 
-def main(domain_list, redis_server):
+def DatabaseDomainScan(DomainScan):
+    def __init__(self, domain, subdomain_list, mysql_config):
+        super(DomainScan, self).__init(domain, subdomain_list)
+        if mysql_config:
+            self.mysql_connection = MySQLdb.connection(mysql_config["host"],
+                                                       mysql_config["user"],
+                                                       mysql_config["pass"],
+                                                       mysql_config["database"])
+        else:
+            self.mysql_connection = None
+
+    def runScan(self):
+        scan_results = super(DomainScan, self).runScan()
+
+def main(domain_list, mysql_config):
     for domain in domain_list:
         print domain
-        domain_scanner = DomainScan(domain, dnsname_list, redis_server=redis_server)
+        domain_scanner = DomainScan(domain, dnsname_list)
         domain_scanner.runScan()
         pprint.pprint(dict(domain_scanner.data))
         print
@@ -136,7 +145,7 @@ if __name__ == "__main__":
     config = yaml.load(open(args.config_path).read())
 
     mysql_config = {}
-    for i in ["host", "db", "user", "pass"]:
+    for i in ["host", "database", "user", "pass"]:
         mysql_config[i] = config.get("mysql", {}).get(i, None)
 
     config_check = sum(map(lambda a: a is not None, ("Derp", "derp", "derp", "derp")))
@@ -147,4 +156,4 @@ if __name__ == "__main__":
     if config_check == 4 and not mysql_available:
         raise Exception("MySQLdb module not present but MySQL is configured")
 
-    main(args.domains, args.redis)
+    main(args.domains, mysql_config)
