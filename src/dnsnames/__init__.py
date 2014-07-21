@@ -12,8 +12,8 @@ if os.path.isfile("/usr/share/i18n/SUPPORTED"):
         locale_data = locales_f.readlines()
         for line in locale_data:
             country_codes.append(line.strip().split("_")[0].lower())
-    dnsnames += set(codes)
+    dnsnames += set(country_codes)
 
 for txtfile in glob.glob("*.txt"):
     with open(txtfile) as wordfile:
-        dnsname_list += [ i.strip() for i in wordfile.readlines() if i.strip() ]
+        dnsnames += [ i.strip() for i in wordfile.readlines() if i.strip() ]
