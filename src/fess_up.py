@@ -18,6 +18,7 @@ N(C) license.
 import dns.resolver
 import dns.rdtypes.ANY.CNAME
 import dns.rdtypes.IN.A
+import dns.rdtypes.ANY.TXT
 import dns.rdtypes.ANY.MX
 
 import collections
@@ -25,6 +26,7 @@ import logging
 import argparse
 import yaml
 import pprint
+import sys
 
 import dnsnames
 
@@ -44,7 +46,8 @@ dnsname_list = dnsnames.dnsnames + [None]
 dnsobject_map = {
     dns.rdtypes.ANY.CNAME.CNAME: ["target"],
     dns.rdtypes.IN.A.A: ["address"],
-    dns.rdtypes.ANY.MX.MX: ["exchange", "preference"]
+    dns.rdtypes.ANY.MX.MX: ["exchange", "preference"],
+    dns.rdtypes.ANY.TXT.TXT: ["strings"],
     }
 
 class DomainScan(object):
@@ -75,6 +78,10 @@ class DomainScan(object):
                     if mxtuple not in mxlist:
                         mxlist.append(mxtuple)
         self.data[subdomain]["MX"] = mxlist
+
+        for subdomain in self.data.keys():
+            for subdomain, records in self._scan("TXT").iteritems():
+                self.data[subdomain]["TXT"] = [ str(record) for record in records ]
 
     def _scan(self, record_type, subdomains=None):
         results = collections.defaultdict(list)
@@ -137,8 +144,8 @@ if __name__ == "__main__":
     parser.add_argument('domains', metavar='dom', type=str, nargs='+',
                         help='A list of domains to check')
     parser.add_argument('-c', dest = 'config_path', action = 'store',
-                        default = '/etc/fess-up.yaml',
-                        help = 'Path to config file.')
+                        default='/etc/fess-up.yaml',
+                        help='Path to config file.')
     args = parser.parse_args()
 
     config = yaml.load(open(args.config_path).read())
@@ -147,7 +154,7 @@ if __name__ == "__main__":
     for i in ["host", "database", "user", "pass"]:
         mysql_config[i] = config.get("mysql", {}).get(i, None)
 
-    config_check = sum(map(lambda a: a is not None, ("Derp", "derp", "derp", "derp")))
+    config_check = sum(map(lambda a: a is not None, mysql_config.values()))
     if config_check != 4 and config_check != 0:
         # config needs to be complete or not there at all
         raise Exception("MySQL configuration not complete!")

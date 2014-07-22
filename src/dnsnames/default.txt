@@ -8,3 +8,15 @@ sites
 my
 www2
 dev
+mx
+imap
+lists
+docs
+email
+pop
+ftp
+webmail
+smtp
+webdisk
+jabber
+secure
