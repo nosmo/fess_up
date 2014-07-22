@@ -85,9 +85,8 @@ class DomainScan(object):
             query_str = "%s.%s" % (subdomain, self.domain) if subdomain else self.domain
             try:
                 answers = dns.resolver.query("%s" % (query_str), record_type)
-            except dns.resolver.NXDOMAIN as e:
-                continue
-            except dns.resolver.NoAnswer:
+            except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer,
+                    dns.name.EmptyLabel) as e:
                 continue
 
             record_results = []
