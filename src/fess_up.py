@@ -28,6 +28,8 @@ import yaml
 import pprint
 import sys
 
+import Queue
+
 import dnsnames
 
 try:
@@ -36,9 +38,6 @@ try:
 except ImportError as e:
     logging.warning("No MySQLdb module available, not using MySQL support")
     mysql_available = False
-
-subdomain_list = ["www", "mail", "wiki", "search", "blog", "blogs", "sites", "my",
-                  "www2", "dev", None]
 
 # Here we use "None" to indicate the root of a domain.
 dnsname_list = dnsnames.dnsnames + [None]
@@ -50,46 +49,39 @@ dnsobject_map = {
     dns.rdtypes.ANY.TXT.TXT: ["strings"],
     }
 
-class DomainScan(object):
+class RecordScanner(threading.Thread):
 
-    def __init__(self, domain, subdomain_list):
+    def __init__(self, domain, subdomain_list, record_type, record_queue):
         self.domain = domain
         self.subdomain_list = subdomain_list
-        self.data = collections.defaultdict(dict)
+        self.record_type = record_type
+        self.record_queue = record_queue
 
-    def runScan(self):
+    def scanCNAME(self):
+        for subdomain, records in self.scan("CNAME",
+                                            self.domain,
+                                            self.subdomain_list,
+                                            self.record_queue).iteritems():
+            self.record_queue.put((subdomain, "CNAME", [ str(record) for record in records ]))
 
-        if self._checkWildcards():
-            sys.stderr.write(("Wildcard test returned positive - our results "
-                              "will be tainted..."))
-
-        for subdomain, record in self._scan("A").iteritems():
-            self.data[subdomain]["A"] = record
-
-        for subdomain in self.data.keys():
-            for subdomain, records in self._scan("CNAME").iteritems():
-                self.data[subdomain]["CNAME"] = [ str(record) for record in records ]
-
-        mxlist = []
-        for subdomain in self.data.keys():
-            for subdomain, records in self._scan("MX").iteritems():
-                for i in xrange(0, len(records), 2):
+    def scanMX(self):
+        for subdomain, records in self.scan("MX",
+                                            self.domain,
+                                            self.subdomain_list,
+                                            self.record_queue).iteritems():
+            mxlist = []
+            for i in xrange(0, len(records), 2):
                     mxtuple = (str(records[i]), records[i+1])
                     if mxtuple not in mxlist:
                         mxlist.append(mxtuple)
-        self.data[subdomain]["MX"] = mxlist
+            self.record_queue.put((subdomain, "MX", mxlist))
 
-        for subdomain in self.data.keys():
-            for subdomain, records in self._scan("TXT").iteritems():
-                self.data[subdomain]["TXT"] = [ str(record) for record in records ]
-
-    def _scan(self, record_type, subdomains=None):
+    @staticmethod
+    def scan(record_type, domain, subdomains, queue=None):
         results = collections.defaultdict(list)
-        if not subdomains:
-            subdomains = self.subdomain_list
 
         for subdomain in subdomains:
-            query_str = "%s.%s" % (subdomain, self.domain) if subdomain else self.domain
+            query_str = "%s.%s" % (subdomain, domain) if subdomain else domain
             try:
                 answers = dns.resolver.query("%s" % (query_str), record_type)
             except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer,
@@ -101,20 +93,59 @@ class DomainScan(object):
                 record_valuenames = dnsobject_map[type(data)]
                 for record_valuename in record_valuenames:
                     record_results.append(getattr(data, record_valuename))
-            results[subdomain] = record_results
+                results[subdomain] = record_results
 
         return dict(results)
 
-    def _checkWildcards(self):
+    @staticmethod
+    def checkWildcard(domain):
         try:
             answers = dns.resolver.query(
-                "trollllloolololoololo1337lolololololollol.%s" % self.domain
+                "trollllloolololoololo1337lolololololollol.%s" % domain
             )
         except dns.resolver.NXDOMAIN as e:
             return False
         except dns.resolver.NoAnswer:
             return False
         return True
+
+class DomainScan(object):
+
+    def __init__(self, domain, subdomain_list):
+        self.domain = domain
+        self.subdomain_list = subdomain_list
+        self.data = collections.defaultdict(dict)
+        self.records_queue = Queue.Queue()
+        self.wildcard_domain = False
+        self.scanners = []
+
+    def runScan(self):
+
+        if RecordScanner.checkWildcard():
+            self.wildcard_domain = True
+            sys.stderr.write(("Wildcard test returned positive - our results "
+                              "will be tainted..."))
+
+        # Do a manual non-threaded scan here so that we have a more
+        # accurate subdomain list
+        for subdomain, record in RecordScanner.scan("A",
+                                                    self.domain,
+                                                    self.subdomain_list).iteritems():
+            self.data[subdomain]["A"] = record
+
+        scanners = []
+
+        for record_type in ["CNAME", "MX", "TXT"]:
+            scanner = RecordScanner(self.domain, self.data.keys(),
+                                    record_type, self.records_queue)
+            scanner.start()
+            scanners.append(scanner)
+
+
+        for subdomain in self.data.keys():
+            for subdomain, records in self.scan("TXT").iteritems():
+                self.data[subdomain]["TXT"] = [ str(record) for record in records ]
+
 
 def DatabaseDomainScan(DomainScan):
     def __init__(self, domain, subdomain_list, mysql_config):
@@ -132,9 +163,10 @@ def DatabaseDomainScan(DomainScan):
 
 def main(domain_list, mysql_config):
     for domain in domain_list:
-        print domain
         domain_scanner = DomainScan(domain, dnsname_list)
         domain_scanner.runScan()
+
+        print domain
         pprint.pprint(dict(domain_scanner.data))
         print
 
