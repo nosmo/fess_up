@@ -66,22 +66,19 @@ class DomainScan(object):
         for subdomain, record in self._scan("A").iteritems():
             self.data[subdomain]["A"] = record
 
-        for subdomain in self.data.keys():
-            for subdomain, records in self._scan("CNAME").iteritems():
-                self.data[subdomain]["CNAME"] = [ str(record) for record in records ]
+        for subdomain, records in self._scan("CNAME", subdomains=self.data.keys()).iteritems():
+            self.data[subdomain]["CNAME"] = [ str(record) for record in records ]
 
         mxlist = []
-        for subdomain in self.data.keys():
-            for subdomain, records in self._scan("MX").iteritems():
-                for i in xrange(0, len(records), 2):
-                    mxtuple = (str(records[i]), records[i+1])
-                    if mxtuple not in mxlist:
-                        mxlist.append(mxtuple)
+        for subdomain, records in self._scan("MX", subdomains=self.data.keys()).iteritems():
+            for i in xrange(0, len(records), 2):
+                mxtuple = (str(records[i]), records[i+1])
+                if mxtuple not in mxlist:
+                    mxlist.append(mxtuple)
         self.data[subdomain]["MX"] = mxlist
 
-        for subdomain in self.data.keys():
-            for subdomain, records in self._scan("TXT").iteritems():
-                self.data[subdomain]["TXT"] = [ str(record) for record in records ]
+        for subdomain, records in self._scan("TXT", subdomains=self.data.keys()).iteritems():
+            self.data[subdomain]["TXT"] = [ str(record) for record in records ]
 
     def _scan(self, record_type, subdomains=None):
         results = collections.defaultdict(list)
