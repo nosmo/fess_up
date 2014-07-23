@@ -39,7 +39,7 @@ class DomainScan(object):
                 mxtuple = (str(records[i]), records[i+1])
                 if mxtuple not in mxlist:
                     mxlist.append(mxtuple)
-        self.data[subdomain]["MX"] = mxlist
+            self.data[subdomain]["MX"] = mxlist
 
         for subdomain, records in self._scan("TXT", subdomains=self.data.keys()).iteritems():
             self.data[subdomain]["TXT"] = [ str(record) for record in records ]
