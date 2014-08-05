@@ -2,7 +2,7 @@ import os
 import glob
 
 dnsnames = []
-dnsname_list = ["www", "mail", "wiki", "search", "blog", "blogs", "sites", "my",
+dnsname_list = ["www", "mail", "wiki", "search", "blog", "blogs", "sites", "my", "m"
                   "www2", "dev", None]
 dnsnames += dnsname_list
 

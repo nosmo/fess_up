@@ -32,19 +32,23 @@ except ImportError as e:
 # Here we use "None" to indicate the root of a domain.
 dnsname_list = dnsnames.dnsnames + [None]
 
-def main(domain_list, mysql_config):
+def main(domain_list, mysql_config, atmode=False):
     for domain in domain_list:
         print domain
         domain_scanner = DomainScan(domain, dnsname_list)
         domain_scanner.runScan()
+        if atmode and None in domain_scanner.data:
+            domain_scanner.data["@"] = domain_scanner.data[None]
+            del(domain_scanner.data[None])
         pprint.pprint(dict(domain_scanner.data))
-        print
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Scan a domain for DNS records')
 
     parser.add_argument('domains', metavar='dom', type=str, nargs='+',
                         help='A list of domains to check')
+    parser.add_argument("--at", dest="atmode", action="store_true",
+                        help="Don't output None, use @ instead")
     parser.add_argument('-c', dest = 'config_path', action = 'store',
                         default='/etc/fess-up.yaml',
                         help='Path to config file.')
@@ -64,4 +68,4 @@ if __name__ == "__main__":
     if config_check == 4 and not mysql_available:
         raise Exception("MySQLdb module not present but MySQL is configured")
 
-    main(args.domains, mysql_config)
+    main(args.domains, mysql_config, args.atmode)
