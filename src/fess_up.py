@@ -50,7 +50,7 @@ if __name__ == "__main__":
     parser.add_argument("--at", dest="atmode", action="store_true",
                         help="Don't output None, use @ instead")
     parser.add_argument('-c', dest = 'config_path', action = 'store',
-                        default='/etc/fess-up.yaml',
+                        default='/etc/fess_up.yaml',
                         help='Path to config file.')
     args = parser.parse_args()
 
