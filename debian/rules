@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+build:
+	dh build
+
+clean:
+	dh_testdir
+	dh_auto_clean
+	dh_clean
+
+%:
+	echo "target" $@
+	dh $@

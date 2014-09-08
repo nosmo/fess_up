@@ -1,0 +1,17 @@
+Source: python-fessup
+Section: python
+Priority: optional
+Maintainer: Distributed Deflect Packaging <sysops@equalit.ie>
+Build-Depends:
+        debhelper,
+        python-support
+Standards-Version: 3.9.1
+
+Package: python-fessup
+Architecture: all
+Depends:
+         python-dnspython,
+	 python-yaml
+Suggests:
+	 python-mysqldb
+Description: Automated scanning and storage of per-site DNS records of all kinds.

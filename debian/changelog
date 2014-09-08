@@ -1,0 +1,5 @@
+python-fessup (0.0.1) unstable; urgency=low
+
+  * First version of a DNS scanning library and tool in Python.
+
+ -- Distributed Deflect Packaging <sysops@equalit.ie>  Mon, 08 Sept 2014 17:19:00 +0000

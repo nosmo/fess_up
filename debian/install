@@ -1,0 +1,3 @@
+conf/fess_up.yaml /etc/
+src/fess_up.py /usr/bin/fess_up
+src/fess_up /usr/share/pyshared/
