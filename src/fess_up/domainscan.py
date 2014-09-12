@@ -34,7 +34,7 @@ class DomainScan(object):
 
         for subdomain, records in self._scan("CNAME", subdomains=self.data.keys()).iteritems():
             self.data[subdomain]["CNAME"] = [ str(record) for record in records ]
-            
+
         mxlist = []
         for subdomain, records in self._scan("MX", subdomains=self.data.keys()).iteritems():
             for i in xrange(0, len(records), 2):
@@ -64,7 +64,7 @@ class DomainScan(object):
                 record_valuenames = dnsobject_map[type(data)]
                 for record_valuename in record_valuenames:
                     record_data = getattr(data, record_valuename)
-                    if type(record_data) == list: 
+                    if type(record_data) == list:
                         record_results += record_data
                     else:
                         record_results.append(record_data)
@@ -82,17 +82,3 @@ class DomainScan(object):
         except dns.resolver.NoAnswer:
             return False
         return True
-
-def DatabaseDomainScan(DomainScan):
-    def __init__(self, domain, subdomain_list, mysql_config):
-        super(DomainScan, self).__init(domain, subdomain_list)
-        if mysql_config:
-            self.mysql_connection = MySQLdb.connection(mysql_config["host"],
-                                                       mysql_config["user"],
-                                                       mysql_config["pass"],
-                                                       mysql_config["database"])
-        else:
-            self.mysql_connection = None
-
-    def runScan(self):
-        scan_results = super(DomainScan, self).runScan()
