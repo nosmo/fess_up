@@ -25,7 +25,7 @@ nosmo.me
 {None: {'A': ['92.51.245.61'],
         'MX': [('nosmo.me.', 10)],
         'TXT': ['v=spf1 mx -all']},
-        'www': {'A': ['92.51.245.61'],
+ 'www': {'A': ['92.51.245.61'],
         'CNAME': ['nosmo.me.'],
         'MX': [('nosmo.me.', 10)],
         'TXT': ['v=spf1 mx -all']}}
