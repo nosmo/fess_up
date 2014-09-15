@@ -14,17 +14,17 @@ setup(
     author = "Hugh Nowlan",
     author_email = "nosmo@nosmo.me",
     description = "DNS record scraper",
-    license = "N(C)",
+    license = "Hacktivismo Enhanced-Source Software License Agreement",
     keywords = "dns zone scraper",
     url = "http://github.com/nosmo/fess_up",
     packages=['fess_up', 'fess_up.dnsnames'],
     long_description=read('../README.md'),
     classifiers=[
-        "Development Status :: 3 - Alpha",
-        "License :: N(C) License",
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Intended Audience :: System Administrators",
+        "Topic :: Internet :: Name Service (DNS)",
+        "Topic :: Utilities",
         ],
     scripts = ["fess_up.py"],
-    data_files=[
-        ('/etc', ["../conf/fess_up.yaml"]),
-        ],
     )
