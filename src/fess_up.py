@@ -25,23 +25,33 @@ from fess_up import dnsnames, DomainScan
 # Here we use "None" to indicate the root of a domain.
 dnsname_list = dnsnames.dnsnames + [None]
 
-def main(domain_list, atmode=False):
+def main(domain_list, bindmode=False):
     for domain in domain_list:
         print domain
         domain_scanner = DomainScan(domain, dnsname_list)
         domain_scanner.runScan()
-        if atmode and None in domain_scanner.data:
+        if None in domain_scanner.data:
             domain_scanner.data["@"] = domain_scanner.data[None]
             del(domain_scanner.data[None])
-        pprint.pprint(dict(domain_scanner.data))
+        if bindmode:
+            for label, recorddict in domain_scanner.data.iteritems():
+                for recordtype, recordvalues in recorddict.iteritems():
+                    arglist = reduce(lambda a,b: a+b, recordvalues)
+                    if recordtype == "MX":
+                        arglist = "%s\t%s" % (arglist[1], arglist[0])
+                    print "%s\t%s\t%s\t%s" % (label, "IN",
+                                              recordtype,
+                                              arglist)
+        else:
+            pprint.pprint(dict(domain_scanner.data))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Scan a domain for DNS records')
 
     parser.add_argument('domains', metavar='dom', type=str, nargs='+',
                         help='A list of domains to check')
-    parser.add_argument("--at", dest="atmode", action="store_true",
-                        help="Don't output None, use @ instead")
+    parser.add_argument("--bind", "-B", dest="bindmode", action="store_true",
+                        help="Output in a bind-like manner")
     args = parser.parse_args()
 
-    main(args.domains, args.atmode)
+    main(args.domains, args.bindmode)

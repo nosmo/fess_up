@@ -20,7 +20,7 @@ To scan a domain using the ```fess_up.py``` (installed as
 provide the domain as an argument:
 
 ```
-./fess_up nosmo.me --at
+fess_up nosmo.me
 nosmo.me
 {'@': {'A': ['92.51.245.61'],
         'MX': [('nosmo.me.', 10)],
@@ -30,9 +30,19 @@ nosmo.me
         'MX': [('nosmo.me.', 10)],
         'TXT': ['v=spf1 mx -all']}}
 ```
+fess_up can also output in a bind-like fashion when using the -B flag.
 
-The ```--at``` flag simply replaces any values for the root domain
-with an @.
+```
+fess_up.py nosmo.me -B
+nosmo.me
+@       IN      A       92.51.245.61
+@       IN      TXT     v=spf1 mx -all
+@       IN      MX      10      nosmo.me.
+www     IN      A       92.51.245.61
+www     IN      CNAME   nosmo.me.
+www     IN      MX      10      nosmo.me.
+www     IN      TXT     v=spf1 mx -all
+```
 
 Library
 --------
