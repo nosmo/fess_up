@@ -32,7 +32,7 @@ class DomainScan(object):
         for subdomain, record in self._scan("A").iteritems():
             self.data[subdomain]["A"] = record
 
-        for subdomain, records in self._scan("CNAME", subdomains=self.data.keys()).iteritems():
+        for subdomain, records in self._scan("CNAME").iteritems():
             self.data[subdomain]["CNAME"] = [ str(record) for record in records ]
 
         mxlist = []
@@ -57,6 +57,10 @@ class DomainScan(object):
                 answers = self.resolver.query("%s" % (query_str), record_type)
             except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer,
                     dns.name.EmptyLabel) as e:
+                continue
+
+            # Skip CNAME records when we haven't asked for them
+            if answers.qname != answers.canonical_name:
                 continue
 
             record_results = []
