@@ -2,6 +2,7 @@ import dns.resolver
 import dns.rdtypes.ANY.CNAME
 import dns.rdtypes.IN.A
 import dns.rdtypes.ANY.TXT
+import dns.rdtypes.ANY.NS
 import dns.rdtypes.ANY.MX
 import sys
 
@@ -12,6 +13,7 @@ dnsobject_map = {
     dns.rdtypes.IN.A.A: ["address"],
     dns.rdtypes.ANY.MX.MX: ["exchange", "preference"],
     dns.rdtypes.ANY.TXT.TXT: ["strings"],
+    dns.rdtypes.ANY.NS.NS: ["target"],
     }
 
 class DomainScan(object):
@@ -28,6 +30,9 @@ class DomainScan(object):
         if self._checkWildcards():
             sys.stderr.write(("Wildcard test returned positive - our results "
                               "will be tainted..."))
+
+        for subdomain, record in self._scan("NS").iteritems():
+            self.data[subdomain]["NS"] = record
 
         for subdomain, record in self._scan("A").iteritems():
             self.data[subdomain]["A"] = record
@@ -71,7 +76,7 @@ class DomainScan(object):
                     if type(record_data) == list:
                         record_results += record_data
                     else:
-                        record_results.append(record_data)
+                        record_results.append(str(record_data))
             results[subdomain] = record_results
 
         return dict(results)
