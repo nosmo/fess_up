@@ -24,12 +24,14 @@ class DomainScan(object):
         self.data = collections.defaultdict(dict)
         self.resolver = dns.resolver.Resolver()
         self.resolver.retry_servfail = True
+        self.wildcard = False
 
     def runScan(self):
 
         if self._checkWildcards():
             sys.stderr.write(("Wildcard test returned positive - our results "
                               "will be tainted..."))
+            self.wildcard = True
 
         for subdomain, record in self._scan("NS").iteritems():
             self.data[subdomain]["NS"] = record
