@@ -22,8 +22,7 @@ import pprint
 
 from fess_up import dnsnames, DomainScan
 
-# Here we use "None" to indicate the root of a domain.
-dnsname_list = dnsnames.dnsnames + [None]
+dnsname_list = dnsnames.dnsnames
 
 def main(domain_list, bindmode=False):
     for domain in domain_list:
