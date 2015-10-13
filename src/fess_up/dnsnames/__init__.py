@@ -14,6 +14,6 @@ if os.path.isfile("/usr/share/i18n/SUPPORTED"):
             country_codes.append(line.strip().split("_")[0].lower())
     dnsnames += set(country_codes)
 
-for txtfile in glob.glob("*.txt"):
+for txtfile in glob.glob("%s/*.txt" % os.path.dirname(os.path.abspath(__file__))):
     with open(txtfile) as wordfile:
         dnsnames += [ i.strip() for i in wordfile.readlines() if i.strip() ]
