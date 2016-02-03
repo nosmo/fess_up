@@ -31,5 +31,5 @@ basing subsequent queries off of previously discovered records.
         "Topic :: Internet :: Name Service (DNS)",
         "Topic :: Utilities",
         ],
-    scripts = ["fess_up.py"],
+    scripts = ["bin/fess_up"],
     )
