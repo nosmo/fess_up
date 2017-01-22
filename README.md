@@ -2,21 +2,21 @@ fess_up
 =======
 
 Fess Up is an unintelligent DNS record guesser in Python. It offers
-both a library and a command line tool to scan specific domains for
-(currently) one layer of subdomains. The scan is dictionary based and
+both a library and a command-line tool to scan specific domains for
+(currently) one layer of subdomains. The scan is dictionary-based and
 it will attempt to avoid superfluous queries by basing subsequent
 queries off of previously discovered records.
 
 fess_up's scanning wordlist is based on files installed in the
 fess_up/dnsnames/ directory. To expand this list, either edit
-```default.txt``` or add another .txt file to the directory and it
+`default.txt` or add another .txt file to the directory and it
 will be automatically loaded.
 
-Command line tool
+Command-line tool
 -------
 
-To scan a domain using the ```fess_up.py``` (installed as
-```fess_up``` when using the Debian package) command line tool, simply
+To scan a domain using the `fess_up.py` (installed as
+`fess_up` when using the Debian package) command line tool, simply
 provide the domain as an argument:
 
 ```
@@ -30,7 +30,7 @@ nosmo.me
         'MX': [('nosmo.me.', 10)],
         'TXT': ['v=spf1 mx -all']}}
 ```
-fess_up can also output in a bind-like fashion when using the -B flag.
+`fess_up` can also output in a bind-like fashion when using the -B flag.
 
 ```
 fess_up.py nosmo.me -B
@@ -47,7 +47,7 @@ www     IN      TXT     v=spf1 mx -all
 Library
 --------
 
-fess_up's domain scan can be used as a library:
+`fess_up`'s domain scan can be used as a library:
 
 ```
 >>> from fess_up import dnsnames, DomainScan
